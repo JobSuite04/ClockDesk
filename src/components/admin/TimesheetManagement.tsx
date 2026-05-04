@@ -81,40 +81,38 @@ export function TimesheetManagement() {
   const [editEvent, setEditEvent] = useState<ClockEvent | null>(null)
   const [expanded, setExpanded] = useState<string | null>(null)
 
-  useEffect(() => {
-    supabase.from('profiles').select('*').eq('is_active', true).order('full_name')
-      .then(({ data }) => setStaff((data as Profile[]) ?? []))
-  }, [])
+  useEffect(() => { loadAll() }, [weekStart, selectedStaff])
 
-  useEffect(() => { load() }, [weekStart, selectedStaff])
-
-  async function load() {
+  async function loadAll() {
     setLoading(true)
     const ws = format(weekStart, 'yyyy-MM-dd')
     const we = format(addWeeks(weekStart, 1), 'yyyy-MM-dd')
 
-    let query = supabase
-      .from('clock_events')
-      .select('*, profile:profiles(*)')
-      .gte('timestamp', `${ws}T00:00:00`)
-      .lt('timestamp', `${we}T00:00:00`)
-      .order('timestamp')
+    // Load profiles and clock events in parallel
+    const [profilesRes, eventsRes] = await Promise.all([
+      supabase.from('profiles').select('*').eq('is_active', true).order('full_name'),
+      (() => {
+        let q = supabase
+          .from('clock_events')
+          .select('*')
+          .gte('timestamp', `${ws}T00:00:00`)
+          .lt('timestamp', `${we}T00:00:00`)
+          .order('timestamp')
+        if (selectedStaff !== 'all') q = q.eq('user_id', selectedStaff)
+        return q
+      })(),
+    ])
 
-    if (selectedStaff !== 'all') query = query.eq('user_id', selectedStaff)
+    const allProfiles = (profilesRes.data as Profile[]) ?? []
+    setStaff(allProfiles)
 
-    const { data } = await query
-    const events: ClockEvent[] = (data as ClockEvent[]) ?? []
+    const events: ClockEvent[] = (eventsRes.data as ClockEvent[]) ?? []
 
-    const profileMap: Record<string, Profile> = {}
-    events.forEach((e) => {
-      if (e.profile) profileMap[e.user_id] = e.profile as unknown as Profile
-    })
+    const relevantProfiles = selectedStaff === 'all'
+      ? allProfiles
+      : allProfiles.filter((s) => s.id === selectedStaff)
 
-    const relevantStaff = selectedStaff === 'all'
-      ? staff.filter((s) => s.is_active)
-      : staff.filter((s) => s.id === selectedStaff)
-
-    const result = relevantStaff.map((profile) => {
+    const result = relevantProfiles.map((profile) => {
       const userEvents = events.filter((e) => e.user_id === profile.id)
       const summary = buildWeeklySummary(
         userEvents,
@@ -129,6 +127,8 @@ export function TimesheetManagement() {
     setSummaries(result)
     setLoading(false)
   }
+
+  async function load() { await loadAll() }
 
   function exportCSV() {
     const rows = [['Name', 'Date', 'Clock In', 'Clock Out', 'Hours', 'Admin Edited', 'Edit Reason']]
