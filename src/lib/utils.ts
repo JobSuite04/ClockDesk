@@ -6,7 +6,6 @@ import {
   endOfWeek,
   eachDayOfInterval,
   isWeekend,
-  addDays,
 } from 'date-fns'
 import type { ClockEvent, TimesheetEntry, WeeklySummary } from '../types'
 
