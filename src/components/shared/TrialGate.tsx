@@ -4,7 +4,8 @@ import { loadStripe } from '@stripe/stripe-js'
 import { useAuth } from '../../context/AuthContext'
 import { PLAN_PRICES } from '../../types'
 
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY as string)
+const stripeKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY as string | undefined
+const stripePromise = stripeKey ? loadStripe(stripeKey) : null
 
 const PRICE_IDS: Record<string, Record<string, string>> = {
   starter: { monthly: import.meta.env.VITE_STRIPE_STARTER_MONTHLY_PRICE_ID, annual: import.meta.env.VITE_STRIPE_STARTER_ANNUAL_PRICE_ID },
@@ -96,12 +97,17 @@ export function UpgradePage() {
 
   async function handleCheckout(planKey: string) {
     setLoading(planKey)
+    if (!stripePromise) {
+      alert('Stripe is not configured yet. Please add your Stripe publishable key to get started.')
+      setLoading(null)
+      return
+    }
     const stripe = await stripePromise
     if (!stripe) { setLoading(null); return }
 
     const priceId = PRICE_IDS[planKey]?.[billing]
     if (!priceId) {
-      alert('Stripe price IDs not configured. Please add them to your .env file.')
+      alert('Stripe price IDs not configured. Please add them to your environment variables.')
       setLoading(null)
       return
     }
