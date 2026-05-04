@@ -37,10 +37,6 @@ export function HolidayRequests() {
     .filter((r) => r.status === 'approved')
     .reduce((sum, r) => sum + r.days_requested, 0)
 
-  const pendingDays = requests
-    .filter((r) => r.status === 'pending')
-    .reduce((sum, r) => sum + r.days_requested, 0)
-
   const allowance = profile?.annual_leave_allowance ?? 0
   const remaining = allowance - usedDays
 

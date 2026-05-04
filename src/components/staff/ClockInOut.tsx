@@ -1,11 +1,11 @@
 import { useEffect, useState, useRef } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
-import { formatTime, formatDate, formatHours } from '../../lib/utils'
+import { formatTime, formatDate } from '../../lib/utils'
 import { differenceInSeconds } from 'date-fns'
 
 export function ClockInOut() {
-  const { user, profile, organisation } = useAuth()
+  const { user, profile } = useAuth()
   const [clockedIn, setClockedIn] = useState(false)
   const [clockInTime, setClockInTime] = useState<string | null>(null)
   const [elapsed, setElapsed] = useState(0)

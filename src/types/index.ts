@@ -79,6 +79,7 @@ export interface HolidayRequest {
   reviewed_by: string | null
   reviewed_at: string | null
   created_at: string
+  organisation_id: string | null
   profile?: Profile
   reviewer?: Profile
 }

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { format, startOfWeek, addWeeks, subWeeks } from 'date-fns'
+import { format, addWeeks, subWeeks } from 'date-fns'
 import { supabase } from '../../lib/supabase'
 import { formatTime, formatDate, formatHours, formatCurrency, buildWeeklySummary, getWeekStart } from '../../lib/utils'
 import type { Profile, ClockEvent, WeeklySummary } from '../../types'
@@ -11,7 +11,6 @@ function EditModal({ event, onClose, onSaved }: { event: ClockEvent; onClose: ()
   const { register, handleSubmit, formState: { isSubmitting, errors } } = useForm<EditForm>({
     defaultValues: { timestamp: event.timestamp.slice(0, 16), reason: '' },
   })
-  const { user } = { user: null } // will be filled by auth
 
   async function onSubmit(values: EditForm) {
     const { data: { user } } = await supabase.auth.getUser()
