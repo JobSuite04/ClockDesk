@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
+import { supabaseAdmin } from '../../lib/supabaseAdmin'
 import { formatTime, formatDate } from '../../lib/utils'
 import { ReferralCard } from './ReferralCard'
 import type { Profile, ClockEvent, HolidayRequest } from '../../types'
@@ -22,13 +23,13 @@ export function AdminDashboard() {
       const today = new Date().toISOString().split('T')[0]
 
       const [profilesRes, clockRes, holidayRes] = await Promise.all([
-        supabase.from('profiles').select('id').eq('is_active', true).eq('role', 'staff'),
-        supabase
+        supabaseAdmin.from('profiles').select('id').eq('is_active', true).eq('role', 'staff'),
+        supabaseAdmin
           .from('clock_events')
           .select('*, profile:profiles(*)')
           .gte('timestamp', `${today}T00:00:00`)
           .order('timestamp', { ascending: false }),
-        supabase
+        supabaseAdmin
           .from('holiday_requests')
           .select('*, profile:profiles(*)')
           .eq('status', 'pending')
@@ -65,12 +66,12 @@ export function AdminDashboard() {
 
     load()
 
-    const channel = supabase
+    const channel = supabaseAdmin
       .channel('dashboard')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'clock_events' }, load)
       .subscribe()
 
-    return () => { supabase.removeChannel(channel) }
+    return () => { supabaseAdmin.removeChannel(channel) }
   }, [])
 
   if (loading) {

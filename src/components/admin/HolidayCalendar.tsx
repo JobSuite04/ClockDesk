@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, startOfWeek, endOfWeek, isSameMonth, isToday, parseISO, isWithinInterval } from 'date-fns'
 import { supabase } from '../../lib/supabase'
+import { supabaseAdmin } from '../../lib/supabaseAdmin'
 import { isUKBankHoliday, formatDate } from '../../lib/utils'
 import type { HolidayRequest, Profile } from '../../types'
 
@@ -100,7 +101,7 @@ export function HolidayCalendar() {
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'approved' | 'declined'>('all')
 
   async function load() {
-    const { data } = await supabase
+    const { data } = await supabaseAdmin
       .from('holiday_requests')
       .select('*, profile:profiles(*)')
       .order('created_at', { ascending: false })

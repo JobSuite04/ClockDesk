@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { format, addWeeks, subWeeks } from 'date-fns'
 import { supabase } from '../../lib/supabase'
+import { supabaseAdmin } from '../../lib/supabaseAdmin'
 import { formatTime, formatDate, formatHours, formatCurrency, buildWeeklySummary, getWeekStart } from '../../lib/utils'
 import type { Profile, ClockEvent, WeeklySummary } from '../../types'
 
@@ -90,9 +91,9 @@ export function TimesheetManagement() {
 
     // Load profiles and clock events in parallel
     const [profilesRes, eventsRes] = await Promise.all([
-      supabase.from('profiles').select('*').eq('is_active', true).order('full_name'),
+      supabaseAdmin.from('profiles').select('*').eq('is_active', true).order('full_name'),
       (() => {
-        let q = supabase
+        let q = supabaseAdmin
           .from('clock_events')
           .select('*')
           .gte('timestamp', `${ws}T00:00:00`)
