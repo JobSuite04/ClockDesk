@@ -111,7 +111,7 @@ export function TimesheetManagement() {
     })
 
     const relevantStaff = selectedStaff === 'all'
-      ? staff.filter((s) => s.role === 'staff')
+      ? staff.filter((s) => s.is_active)
       : staff.filter((s) => s.id === selectedStaff)
 
     const result = relevantStaff.map((profile) => {
